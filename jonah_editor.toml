@@ -1,3 +1,10 @@
 # https://github.com/eelias13/jonah
 docker = "./Dockerfile"
-exports = [{ path = "/app/web/", name = "oberon0c" }]
+exports = [
+    { path = "/app/wasm_loader.js", name = "oberon0c/wasm_loader.js" },
+    { path = "/app/web/script.js", name = "oberon0c/script.js" },
+    { path = "/app/web/index.html", name = "oberon0c/index.html" },
+    { path = "/app/wasm_lib.wasm", name = "oberon0c/wasm_lib.wasm" },
+    { path = "/app/web/assets/", name = "assets/" },
+]
+create_host_dirs = ["oberon0c"]

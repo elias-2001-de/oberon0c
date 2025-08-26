@@ -76,6 +76,14 @@ emcmake cmake ..
 make
 ```
 
+#### Compile with jonah
+
+```bash
+curl -L -o jonah https://github.com/elias-2001-de/jonah/releases/download/v0.1.8/jonah
+chmod +x jonah
+./jonah project jonah_editor.toml dist
+```
+
 This will produce the `wasm_lib.wasm` and `wasm_lib.js` files needed to run the compiled Oberon-0 programs in a browser or a WASM runtime.
 
 ### Running the WebAssembly Compiler

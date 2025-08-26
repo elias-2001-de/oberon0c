@@ -63,3 +63,6 @@ wasm_lib.wasm
 
 # env
 .env
+
+jonah
+dist/

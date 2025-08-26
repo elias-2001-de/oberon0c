@@ -14,7 +14,8 @@ WORKDIR /app
 COPY . .
 
 RUN make
-RUN cp wasm_lib.js web/wasm_loader.js
-RUN cp wasm_lib.wasm web/
+RUN mv wasm_lib.js wasm_loader.js
+# RUN cp wasm_lib.js web/wasm_loader.js
+# RUN cp wasm_lib.wasm web/
 
 CMD ["bash"]
