@@ -5,7 +5,7 @@ EMCC = emcc
 OUT = wasm_lib.js
 
 # Include Paths
-INCLUDES = -I. -I$(EMSCRIPTEN)/cache/sysroot/include -I$(BOOST_ROOT)
+INCLUDES = -I. -I/home/elias/code/emsdk/cache/sysroot/include -I./boost
 
 # Compiler Flags (Only for Compilation)
 CXXFLAGS = -O2 -Wall $(INCLUDES)
