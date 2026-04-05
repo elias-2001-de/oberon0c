@@ -92,7 +92,7 @@ function run_code(editor, output_el) {
 
 function setup_cmd(editor, output_el) {
     const commands = {
-        help: () => "Available commands: help, clear, tokens, ast, checked_ast",
+        help: () => "Available commands: help, clear, tokens, ast, check, ir, run",
         tokens: (args) => {
             Module().then(instance => {
                 const scanner = instance.cwrap('scanner', 'number', ['string']);
@@ -143,6 +143,72 @@ function setup_cmd(editor, output_el) {
                 } else {
                     output_el.innerText += "ERROR: unrecognized arguments for `ast`"
                 }
+            });
+            return "&#9203;";
+        },
+        ir: (args) => {
+            Module().then(instance => {
+                const compile = instance.cwrap('compile', 'number', ['string']);
+                let ptr = compile(editor.getValue());
+                let data = instance.UTF8ToString(ptr);
+                data = JSON.parse(data);
+
+                if (args.length === 0) {
+                    output_el.innerText += data["ir"];
+                } else if (args.length === 2 && args[0] == ">") {
+                    downloadText(data["ir"], args[1]);
+                } else {
+                    output_el.innerText += "ERROR: unrecognized arguments for `ir`";
+                }
+            });
+            return "&#9203;";
+        },
+        run: (args) => {
+            Module().then(instance => {
+                const compile_wat = instance.cwrap('compile_wat', 'number', ['string']);
+                let ptr = compile_wat(editor.getValue());
+                let data = instance.UTF8ToString(ptr);
+                data = JSON.parse(data);
+
+                const wat = data["wat"];
+                if (!wat) {
+                    output_el.innerText += "ERROR: compile_wat returned no WAT\n";
+                    if (data["logs"]) output_el.innerText += JSON.stringify(data["logs"], null, 2);
+                    return;
+                }
+
+                if (args.length === 2 && args[0] == ">") {
+                    downloadText(wat, args[1]);
+                    return;
+                }
+
+                // Use wabt.js to assemble WAT → WASM and run it
+                WabtModule().then(wabt => {
+                    let wasmModule;
+                    try {
+                        const parsed = wabt.parseWat("oberon.wat", wat, {});
+                        parsed.validate();
+                        const binary = parsed.toBinary({});
+                        wasmModule = binary.buffer;
+                    } catch (e) {
+                        output_el.innerText += "WAT assembly error: " + e.message + "\n";
+                        return;
+                    }
+
+                    WebAssembly.instantiate(wasmModule, {}).then(result => {
+                        const exports = result.instance.exports;
+                        if (exports.main) exports.main();
+                        // Print all exported i64/i32 globals
+                        output_el.innerText += "--- exported globals ---\n";
+                        for (const [name, val] of Object.entries(exports)) {
+                            if (val && typeof val === 'object' && 'value' in val) {
+                                output_el.innerText += name + " = " + val.value + "\n";
+                            }
+                        }
+                    }).catch(e => {
+                        output_el.innerText += "WASM instantiation error: " + e.message + "\n";
+                    });
+                });
             });
             return "&#9203;";
         },

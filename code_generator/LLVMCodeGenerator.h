@@ -26,6 +26,7 @@
 #include <utility>
 #include "TypeInfoTable.h"
 #include "VariableTable.h"
+#include "CodeGenerator.h"
 #include "parser/ast/NodeVisitor.h"
 
 enum class OutputFileType
@@ -37,7 +38,7 @@ enum class OutputFileType
 
 using namespace llvm;
 
-class LLVMCodeGenerator : public NodeVisitor
+class LLVMCodeGenerator : public NodeVisitor, public CodeGenerator
 {
 
 private:

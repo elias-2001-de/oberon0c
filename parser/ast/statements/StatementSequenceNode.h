@@ -17,6 +17,7 @@ class StatementSequenceNode : public Node{
         std::vector<std::unique_ptr<StatementNode>> statements_;
 
     public:
+        explicit StatementSequenceNode(FilePos pos);
         StatementSequenceNode(FilePos pos,std::unique_ptr<StatementNode> first_statement);
         void add_statement(std::unique_ptr<StatementNode> statement);
         void accept(NodeVisitor &visitor) override;

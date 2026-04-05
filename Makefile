@@ -12,7 +12,7 @@ CXXFLAGS = -O2 -Wall $(INCLUDES)
 
 # Linker Flags (Only for Linking) 
 LDFLAGS = -s MODULARIZE=1 -s EXPORT_ES6=0 -s ENVIRONMENT=web \
-          -s EXPORTED_FUNCTIONS="['_scanner', '_parse', '_check']" \
+          -s EXPORTED_FUNCTIONS="['_scanner', '_parse', '_check', '_compile', '_compile_wat']" \
           -s EXPORTED_RUNTIME_METHODS='["ccall", "cwrap", "UTF8ToString"]' \
           -s TOTAL_STACK=64MB -s ALLOW_MEMORY_GROWTH=1 -L./boost/stage/lib/
 
@@ -37,10 +37,14 @@ CHECKER_SRC = semantic_checker/ScopeTable.cpp \
 
 UTIL_SRC = util/Logger.cpp util/panic.cpp
 
+IR_SRC = ir/IRBuilder.cpp
+
+CODEGEN_SRC = code_generator/WATCodeGenerator.cpp
+
 MAIN_SRC = wasm_lib.cpp
 
 # Object Files
-OBJS = $(SCANNER_SRC:.cpp=.o) $(PARSER_SRC:.cpp=.o) $(UTIL_SRC:.cpp=.o) $(CHECKER_SRC:.cpp=.o) $(MAIN_SRC:.cpp=.o)
+OBJS = $(SCANNER_SRC:.cpp=.o) $(PARSER_SRC:.cpp=.o) $(UTIL_SRC:.cpp=.o) $(CHECKER_SRC:.cpp=.o) $(IR_SRC:.cpp=.o) $(CODEGEN_SRC:.cpp=.o) $(MAIN_SRC:.cpp=.o)
 
 # Build Rule
 all: $(OUT)
@@ -54,4 +58,4 @@ $(OUT): $(OBJS)
 
 # Clean
 clean:
-	rm -f $(OBJS) $(OUT)
+	rm -f $(OBJS) $(OUT) $(OUT:.js=.wasm)

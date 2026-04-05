@@ -90,6 +90,7 @@ set(SEMANTIC_SOURCES
 )
 
 set(CODEGEN_SOURCES
+        code_generator/CodeGenerator.h
         code_generator/LLVMCodeGenerator.cpp
         code_generator/LLVMCodeGenerator.h
         code_generator/TypeInfoTable.cpp
@@ -98,7 +99,19 @@ set(CODEGEN_SOURCES
         code_generator/VariableTable.h
 )
 
-set(ALL_SOURCES global.h ${UTIL_SOURCES} ${SCANNER_SOURCES} ${PARSER_SOURCES} ${SEMANTIC_SOURCES} ${CODEGEN_SOURCES}
+set(WAT_SOURCES
+        code_generator/CodeGenerator.h
+        code_generator/WATCodeGenerator.cpp
+        code_generator/WATCodeGenerator.h
+)
+
+set(IR_SOURCES
+        ir/IR.h
+        ir/IRBuilder.cpp
+        ir/IRBuilder.h
+)
+
+set(ALL_SOURCES global.h ${UTIL_SOURCES} ${SCANNER_SOURCES} ${PARSER_SOURCES} ${SEMANTIC_SOURCES} ${CODEGEN_SOURCES} ${IR_SOURCES}
 )
 
 add_executable(${OBERON0_C} main.cpp ${ALL_SOURCES})
@@ -132,3 +145,48 @@ endif ()
 
 configure_file(config.h.in config.h @ONLY)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
+# ============================================================
+# Tests (no LLVM dependency)
+# ============================================================
+enable_testing()
+
+include(FetchContent)
+FetchContent_Declare(
+    googletest
+    GIT_REPOSITORY https://github.com/google/googletest.git
+    GIT_TAG        v1.14.0
+    EXCLUDE_FROM_ALL
+)
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
+
+add_executable(oberon0c_tests
+    tests/test_scanner.cpp
+    tests/test_parser.cpp
+    tests/test_semantic.cpp
+    tests/test_codegen.cpp
+    tests/test_wat_codegen.cpp
+    global.h
+    ${UTIL_SOURCES}
+    ${SCANNER_SOURCES}
+    ${PARSER_SOURCES}
+    ${SEMANTIC_SOURCES}
+    ${IR_SOURCES}
+    ${WAT_SOURCES}
+)
+
+target_link_libraries(oberon0c_tests PRIVATE
+    GTest::gtest_main
+    Boost::headers
+)
+
+# Suppress warnings that fire in generated test code
+target_compile_options(oberon0c_tests PRIVATE
+    -Wno-missing-declarations
+    -Wno-switch-default
+    -Wno-sign-conversion
+)
+
+include(GoogleTest)
+gtest_discover_tests(oberon0c_tests)

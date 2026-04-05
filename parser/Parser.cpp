@@ -502,12 +502,21 @@ std::unique_ptr<StatementSequenceNode> Parser::statement_sequence()
 {
     logger_.debug("Statement Sequence");
     auto start = scanner_.peek()->start();
-    auto first = statement();
-    auto sequence = std::make_unique<StatementSequenceNode>(start, std::move(first));
+    auto sequence = std::make_unique<StatementSequenceNode>(start);
+
+    auto is_stmt_start = [this]() {
+        auto t = scanner_.peek()->type();
+        return t == TokenType::kw_if || t == TokenType::kw_while ||
+               t == TokenType::kw_repeat || t == TokenType::const_ident;
+    };
+
+    if (!is_stmt_start()) return sequence;
+
+    sequence->add_statement(statement());
     while (this->if_next(TokenType::semicolon))
     {
         scanner_.next();
-        sequence->add_statement(statement());
+        if (is_stmt_start()) sequence->add_statement(statement());
     }
 
     return sequence;
